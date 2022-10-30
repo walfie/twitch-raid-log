@@ -1,0 +1,41 @@
+name: Update raid log
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: Username being raided
+        required: true
+
+jobs:
+  update-json:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set git user
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Update JSON
+      run: |
+        TMP_FILE="$(mktemp)"
+        DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        USERNAME="${echo '${{ inputs.username }}' | tr '[:upper:]' '[:lower:]'}"
+
+        jq ".users[\"$USERNAME\"].raidsSent += [\"$DATE\"]" ./public/raids.json >$TMP_FILE
+        mv $TMP_FILE ./public/raids.json
+
+        git add public
+        git commit -m "Raided $USERNAME at $DATE"
+        git push origin main
+
+    - name: Deploy
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./public
+        force_orphan: true
+        user_name: "github-actions[bot]"
+        user_email: "github-actions[bot]@users.noreply.github.com"
+
