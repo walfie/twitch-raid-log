@@ -21,7 +21,7 @@ jobs:
       run: |
         TMP_FILE="$(mktemp)"
         DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        USERNAME="${echo '${{ inputs.username }}' | tr '[:upper:]' '[:lower:]'}"
+        USERNAME="$(echo '${{ inputs.username }}' | tr '[:upper:]' '[:lower:]')"
 
         jq ".users[\"$USERNAME\"].raidsSent += [\"$DATE\"]" ./public/raids.json >$TMP_FILE
         mv $TMP_FILE ./public/raids.json
