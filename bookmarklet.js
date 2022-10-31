@@ -27,7 +27,7 @@ fetch('https://walfie.github.io/twitch-raid-log/raids-outgoing.csv')
       const username = elem.querySelector('.tw-link').href.split('/').pop();
       const raidedDate = lastRaided.get(username);
 
-      if (raidedDate) {
+      if (raidedDate && !elem.querySelector('.js-last-raided')) {
         const daysAgo = Math.round((now - raidedDate) / (1000 * 3600 * 24))
         const p = document.createElement('p');
         p.className = 'js-last-raided';
