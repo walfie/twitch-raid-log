@@ -1,4 +1,2 @@
 # twitch-raid-log
 
-TODO
-

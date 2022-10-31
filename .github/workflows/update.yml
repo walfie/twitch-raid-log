@@ -2,8 +2,11 @@ name: Update raid log
 on:
   workflow_dispatch:
     inputs:
-      username:
-        description: Username being raided
+      from:
+        description: User who is sending the raid
+        required: true
+      to:
+        description: User who is being raided
         required: true
 
 jobs:
@@ -17,17 +20,22 @@ jobs:
         git config --global user.name 'github-actions[bot]'
         git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
-    - name: Update JSON
+    - name: Update CSV
       run: |
-        TMP_FILE="$(mktemp)"
         DATE="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-        USERNAME="$(echo '${{ inputs.username }}' | tr '[:upper:]' '[:lower:]')"
+        FROM_USERNAME="$(echo '${{ inputs.from }}' | tr '[:upper:]' '[:lower:]')"
+        TO_USERNAME="$(echo '${{ inputs.to }}' | tr '[:upper:]' '[:lower:]')"
 
-        jq ".users[\"$USERNAME\"].raidsSent += [\"$DATE\"]" ./public/raids.json >$TMP_FILE
-        mv $TMP_FILE ./public/raids.json
+        if [[ "$FROM_USERNAME" == "walfas" ]]; then
+          FILENAME="public/raids-outgoing.csv"
+        else
+          FILENAME="public/raids-incoming.csv"
+        fi
+
+        echo "$DATE,$FROM_USERNAME,TO_USERNAME" >>$FILENAME
 
         git add public
-        git commit -m "Raided $USERNAME at $DATE"
+        git commit -m "$FROM_USERNAME raided $TO_USERNAME at $DATE"
         git push origin main
 
     - name: Deploy
