@@ -11,11 +11,16 @@ while (document.querySelector('.side-nav-card__avatar--offline') === null) {
 fetch('https://walfie.github.io/twitch-raid-log/raids-outgoing.csv')
   .then(resp => resp.text())
   .then(data => {
-    const lastRaided = new Map();
+    const raidsByUser = new Map();
     const lines = data.split('\n').slice(1);
     lines.forEach(line => {
+      if (line.length == 0) { return; }
       const [date, _from, to] = line.split(',');
-      lastRaided.set(to, new Date(date));
+      const existing = raidsByUser.get(to) || { count: 0 };
+      raidsByUser.set(to, {
+        count: existing.count + 1,
+        lastRaided: new Date(date),
+      });
     });
 
     const followed = document.querySelector('[aria-label="Followed Channels"]');
@@ -25,24 +30,25 @@ fetch('https://walfie.github.io/twitch-raid-log/raids-outgoing.csv')
       ...followed.querySelectorAll('[data-test-selector="side-nav-card"]:not(:has(.side-nav-card__avatar--offline))')
     ].map(elem => {
       const username = elem.querySelector('.tw-link').href.split('/').pop();
-      const raidedDate = lastRaided.get(username);
+      const existing = raidsByUser.get(username);
 
-      if (raidedDate && !elem.querySelector('.js-last-raided')) {
-        const daysAgo = Math.round((now - raidedDate) / (1000 * 3600 * 24))
+      if (existing && !elem.querySelector('.js-last-raided')) {
+        const { lastRaided, count } = existing;
+        const daysAgo = Math.round((now - lastRaided) / (1000 * 3600 * 24))
         const p = document.createElement('p');
         p.className = 'js-last-raided';
-        p.innerHTML = daysAgo + ' days ago';
+        p.innerHTML = `${daysAgo} days ago (${count}x)`;
         elem.querySelector('[data-a-target="side-nav-game-title"]').appendChild(p);
         elem.style.paddingTop = '5px';
         elem.style.paddingBottom = '10px';
 
-        return { raidedDate, elem };
+        return { lastRaided, elem };
       } else {
-        return { raidedDate: new Date(0), elem };
+        return { lastRaided: new Date(0), elem };
       }
     });
 
-    elems.sort((a, b) => { return a.raidedDate < b.raidedDate ? -1 : 1; });
+    elems.sort((a, b) => { return a.lastRaided < b.lastRaided ? -1 : 1; });
     elems.forEach(item => followed.appendChild(item.elem));
 
     // Push offline channels back to the bottom
