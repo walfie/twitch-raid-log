@@ -28,15 +28,22 @@ jobs:
 
         if [[ "$FROM_USERNAME" == "walfas" ]]; then
           FILENAME="public/raids-outgoing.csv"
+          OTHER_STREAMER="$TO_USERNAME"
         else
           FILENAME="public/raids-incoming.csv"
+          OTHER_STREAMER="$FROM_USERNAME"
         fi
 
-        echo "$DATE,$FROM_USERNAME,$TO_USERNAME" >>$FILENAME
+        # Avoid adding duplicate entries for the same day (Sometimes the GitHub
+        # Action takes a while to run, and the Twitch webhook will be retried)
+        DAY="$(date -u +%Y-%m-%d)"
+        if [[ -z $(tail -n 1 $FILENAME | grep "\b$OTHER_STREAMER\b" | grep $DAY) ]]; then
+          echo "$DATE,$FROM_USERNAME,$TO_USERNAME" >>$FILENAME
 
-        git add public
-        git commit -m "$FROM_USERNAME raided $TO_USERNAME at $DATE"
-        git push origin main
+          git add public
+          git commit -m "$FROM_USERNAME raided $TO_USERNAME at $DATE"
+          git push origin main
+        fi
 
     - name: Deploy
       uses: peaceiris/actions-gh-pages@v3
