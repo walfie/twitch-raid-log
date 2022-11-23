@@ -42,7 +42,7 @@ jobs:
 
           git add public
           git commit -m "$FROM_USERNAME raided $TO_USERNAME at $DATE"
-          git push origin main
+          git push origin main || echo "Ignoring failed push, probably due to conflicting upstream changes."
         fi
 
     - name: Deploy
