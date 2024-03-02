@@ -27,9 +27,9 @@ fetch('https://walfie.github.io/twitch-raid-log/raids-outgoing.csv')
 
     const now = new Date();
     const elems = [
-      ...followed.querySelectorAll('[data-test-selector="side-nav-card"]:not(:has(.side-nav-card__avatar--offline))')
+      ...followed.querySelectorAll('[data-test-selector="followed-channel"]:not(:has(.side-nav-card__avatar--offline))')
     ].map(elem => {
-      const username = elem.querySelector('.tw-link').href.split('/').pop();
+      const username = elem.href.split('/').pop();
       const existing = raidsByUser.get(username);
 
       if (existing && !elem.querySelector('.js-last-raided')) {
@@ -39,8 +39,8 @@ fetch('https://walfie.github.io/twitch-raid-log/raids-outgoing.csv')
         p.className = 'js-last-raided';
         p.innerHTML = `${daysAgo} days ago (${count}x)`;
         elem.querySelector('[data-a-target="side-nav-game-title"]').appendChild(p);
-        elem.style.paddingTop = '5px';
-        elem.style.paddingBottom = '10px';
+        elem.style.marginTop = '5px';
+        elem.style.marginBottom = '10px';
 
         return { lastRaided, elem };
       } else {
