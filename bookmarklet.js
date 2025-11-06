@@ -44,9 +44,7 @@ function updateList() {
           const p = document.createElement('p');
           p.className = 'js-last-raided';
           p.innerHTML = `${daysAgo} days ago (${count}x)`;
-          elem.querySelector('[data-a-target="side-nav-game-title"]').appendChild(p);
-          elem.style.marginTop = '5px';
-          elem.style.marginBottom = '10px';
+          elem.querySelector('.side-nav-card__metadata').appendChild(p);
 
           return { lastRaided, elem };
         } else {
